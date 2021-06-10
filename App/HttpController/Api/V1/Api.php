@@ -8,20 +8,29 @@
 namespace App\HttpController\Api\V1;
 
 
+use App\Tools\Auth;
+use App\Tools\Response;
 use EasySwoole\EasySwoole\Config;
+use EasySwoole\FastCache\Cache;
 use EasySwoole\Jwt\Jwt;
+use EasySwoole\Validate\Validate;
 
 abstract class Api extends \EasySwoole\Http\AbstractInterface\Controller
 {
 
     private $basicAction = [
-        '/api/users/login',
+        '/api/v1/user/login',
     ];
     protected $token;
 
+    protected $auth;
+    protected $cache;
+    protected $user_id;
 
     public function __construct()
     {
+        $this->auth = Auth::instance();
+        $this->cache = Cache::getInstance();
         parent::__construct();
     }
 
@@ -35,7 +44,6 @@ abstract class Api extends \EasySwoole\Http\AbstractInterface\Controller
 
         // basic列表里的不需要验证
         if (!in_array($path, $this->basicAction)){
-            // 必须有token
             if (empty( $this->request()->getHeader('token')[0] )){
                 $this->error(\EasySwoole\Http\Message\Status::CODE_UNAUTHORIZED,'token不可为空','',\EasySwoole\Http\Message\Status::CODE_UNAUTHORIZED);
                 return false;
@@ -53,9 +61,17 @@ abstract class Api extends \EasySwoole\Http\AbstractInterface\Controller
             {
                 case  1:
                     $this->token = $jwtObject->getData();
+                    $cache_token = $this->cache->get('user_token_' . $this->token['user_id']);
+                    if ($cache_token != $this->request()->getHeader('token')[0]) {
+                        $this->error(0, "token无效",'',\EasySwoole\Http\Message\Status::CODE_BAD_REQUEST);
+                        return false;
+                    }
+                    if (isset($this->token['user_id'])) {
+                        $this->user_id = $this->token['user_id'];
+                    }
                     break;
                 case  -1:
-                    $this->error(\EasySwoole\Http\Message\Status::CODE_BAD_REQUEST, "token无效",'',\EasySwoole\Http\Message\Status::CODE_BAD_REQUEST,);
+                    $this->error(\EasySwoole\Http\Message\Status::CODE_BAD_REQUEST, "token无效",'',\EasySwoole\Http\Message\Status::CODE_BAD_REQUEST);
                     return false;
                     break;
                 case  -2:
@@ -92,14 +108,22 @@ abstract class Api extends \EasySwoole\Http\AbstractInterface\Controller
             return false;
         }
     }
+
+    abstract protected function getValidateRule(?string $action): ?Validate;
+
+    protected function validate(Validate $validate)
+    {
+        return $validate->validate($this->request()->getRequestParam());
+    }
+
     public function error($code = 0, $msg, $data = '', $status = 200)
     {
-        return $this->writeJson($code = 0, $data, $msg, $status);
+        return $this->writeJson($code = 0, $msg, $data, $status);
     }
 
     public function success($code = 1, $msg,  $data = '',$status = 200)
     {
-        return $this->writeJson($code = 1, $data, $msg, $status);
+        return $this->writeJson($code = 1,  $msg,$data, $status);
     }
 
 }
