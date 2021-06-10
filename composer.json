@@ -3,7 +3,8 @@
         "easyswoole/easyswoole": "3.4.x",
         "easyswoole/fast-cache": "^2.0",
         "easyswoole/orm": "^1.4",
-        "easyswoole/hot-reload": "^0.1.2"
+        "easyswoole/hot-reload": "^0.1.2",
+        "easyswoole/jwt": "^1.1"
     },
     "autoload": {
         "psr-4": {
