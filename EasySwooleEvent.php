@@ -4,6 +4,8 @@
 namespace EasySwoole\EasySwoole;
 
 
+use App\Modules\Goods;
+use App\Modules\User;
 use EasySwoole\Component\Process\Exception;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
 use EasySwoole\EasySwoole\Swoole\EventRegister;
@@ -44,5 +46,31 @@ class EasySwooleEvent implements Event
         } catch (RuntimeError $e) {
             echo "[Warn] --> fast-cache注册失败\n";
         }
+
+
+        ###### 注册 rpc 服务 ######
+        /** rpc 服务端配置 */
+        $config = new \EasySwoole\Rpc\Config();
+        $config->setNodeId('EasySwooleRpcNode1');
+        $config->setServerName('EasySwoole'); // 默认 EasySwoole
+        $config->setOnException(function (\Throwable $throwable) {
+
+        });
+        $serverConfig = $config->getServer();
+        $serverConfig->setServerIp('127.0.0.1');
+
+        $rpc = new \EasySwoole\Rpc\Rpc($config);
+
+        $goodsService = new \App\RpcServices\Goods();
+        $goodsService->addModule(new Goods());
+        $rpc->serviceManager()->addService($goodsService);
+
+        $userService = new \App\RpcServices\User();
+        $userService->addModule(new User());
+        $rpc->serviceManager()->addService($userService);
+
+        $rpc->attachServer(ServerManager::getInstance()->getSwooleServer());
+
+
     }
 }
