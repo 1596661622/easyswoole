@@ -13,6 +13,7 @@ use EasySwoole\FastCache\Exception\RuntimeError;
 use EasySwoole\ORM\Db\Connection;
 use EasySwoole\ORM\DbManager;
 use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\RedisPool\Pool;
 use EasySwoole\RedisPool\RedisPool;
 use EasySwoole\Rpc\Rpc;
 
@@ -49,15 +50,22 @@ class EasySwooleEvent implements Event
             echo "[Warn] --> fast-cache注册失败\n";
         }
 
-        $redis_pool = new RedisPool(new RedisConfig(
+        $redis_pool = new Pool(new RedisConfig(
             [
-                'host'=>'192.168.2.144'
+                'host'=>'192.168.2.148'
             ]
         ));
+//        $redis_pool = \EasySwoole\RedisPool\RedisPool::getInstance()->register(new RedisConfig(
+//            [
+//                'host'=>'192.168.2.148'
+//            ]
+//        ),'redis');
+
         $manager = new RedisManager($redis_pool);
         $config = new \EasySwoole\Rpc\Config($manager);
         $config->setNodeManager($manager);
         $rpc = new Rpc($config);
+//        $rpc->attachServer(ServerManager::getInstance()->getSwooleServer());
 
     }
 }
