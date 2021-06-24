@@ -6,6 +6,7 @@ namespace EasySwoole\EasySwoole;
 
 use App\Modules\Goods;
 use App\Modules\User;
+use App\RpcServices\NodeManager\RedisManager;
 use EasySwoole\Component\Process\Exception;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
 use EasySwoole\EasySwoole\Swoole\EventRegister;
@@ -13,6 +14,8 @@ use EasySwoole\FastCache\Cache;
 use EasySwoole\FastCache\Exception\RuntimeError;
 use EasySwoole\ORM\Db\Connection;
 use EasySwoole\ORM\DbManager;
+use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\RedisPool\Pool;
 
 class EasySwooleEvent implements Event
 {
@@ -50,12 +53,23 @@ class EasySwooleEvent implements Event
 
         ###### 注册 rpc 服务 ######
         /** rpc 服务端配置 */
-        $config = new \EasySwoole\Rpc\Config();
+
+        $redis_pool = new Pool(new RedisConfig(
+            [
+                'host'=>'192.168.2.148'
+            ]
+        ));
+
+        $manager = new RedisManager($redis_pool);
+        $config = new \EasySwoole\Rpc\Config($manager);
+        $config->setNodeManager($manager);
+
+//        $config = new \EasySwoole\Rpc\Config();
         $config->setNodeId('EasySwooleRpcNode1');
         $config->setServerName('EasySwoole'); // 默认 EasySwoole
-        $config->setOnException(function (\Throwable $throwable) {
-
-        });
+//        $config->setOnException(function (\Throwable $throwable) {
+//
+//        });
         $serverConfig = $config->getServer();
         $serverConfig->setServerIp('127.0.0.1');
 
