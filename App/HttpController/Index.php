@@ -39,7 +39,7 @@ class Index extends Controller
         // 如果不是需要重新new一个rpc 注意config的配置 节点管理器 以及所在ip是否能被其他服务广播到 如果不能请调整其他服务的广播地址
         $config = new \EasySwoole\Rpc\Config();
         $rpc = new \EasySwoole\Rpc\Rpc($config);
-
+//        var_dump($config);
         $ret = [];
         $client = $rpc->client();
         // client 全局参数

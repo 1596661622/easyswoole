@@ -4,6 +4,7 @@
 namespace EasySwoole\EasySwoole;
 
 
+use App\RpcServices\NodeManager\RedisManager;
 use EasySwoole\Component\Process\Exception;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
 use EasySwoole\EasySwoole\Swoole\EventRegister;
@@ -11,6 +12,9 @@ use EasySwoole\FastCache\Cache;
 use EasySwoole\FastCache\Exception\RuntimeError;
 use EasySwoole\ORM\Db\Connection;
 use EasySwoole\ORM\DbManager;
+use EasySwoole\Redis\Config\RedisConfig;
+use EasySwoole\RedisPool\RedisPool;
+use EasySwoole\Rpc\Rpc;
 
 class EasySwooleEvent implements Event
 {
@@ -44,5 +48,16 @@ class EasySwooleEvent implements Event
         } catch (RuntimeError $e) {
             echo "[Warn] --> fast-cache注册失败\n";
         }
+
+        $redis_pool = new RedisPool(new RedisConfig(
+            [
+                'host'=>'192.168.2.144'
+            ]
+        ));
+        $manager = new RedisManager($redis_pool);
+        $config = new \EasySwoole\Rpc\Config($manager);
+        $config->setNodeManager($manager);
+        $rpc = new Rpc($config);
+
     }
 }
