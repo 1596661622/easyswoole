@@ -9,7 +9,7 @@ namespace App\Modules;
 
 use EasySwoole\Rpc\Service\AbstractServiceModule;
 
-class User  extends  AbstractServiceModule
+class UserModule  extends  AbstractServiceModule
 {
 
     function moduleName(): string

@@ -5,7 +5,7 @@ namespace EasySwoole\EasySwoole;
 
 
 use App\Modules\Goods;
-use App\Modules\User;
+use App\Modules\UserModule;
 use App\RpcServices\NodeManager\RedisManager;
 use EasySwoole\Component\Process\Exception;
 use EasySwoole\EasySwoole\AbstractInterface\Event;
@@ -53,26 +53,27 @@ class EasySwooleEvent implements Event
 
         ###### 注册 rpc 服务 ######
         /** rpc 服务端配置 */
-
-        $redis_pool = new Pool(new RedisConfig(
-            [
-                'host'=>'192.168.2.148'
-            ]
-        ));
-
-        $manager = new RedisManager($redis_pool);
-        $config = new \EasySwoole\Rpc\Config($manager);
-        $config->setNodeManager($manager);
-
-//        $config = new \EasySwoole\Rpc\Config();
+//        $redis_pool = new Pool(new RedisConfig(
+//            [
+//                'host'=>'192.168.2.148'
+//            ]
+//        ));
+//
+//        $manager = new RedisManager($redis_pool);
+//        $config = new \EasySwoole\Rpc\Config($manager);
+//        $config->setNodeManager($manager);
+        $config = new \EasySwoole\Rpc\Config();
         $config->setNodeId('EasySwooleRpcNode1');
         $config->setServerName('EasySwoole'); // 默认 EasySwoole
-//        $config->setOnException(function (\Throwable $throwable) {
-//
-//        });
+        $config->setOnException(function (\Throwable $throwable) {
+
+        });
+
         $serverConfig = $config->getServer();
         $serverConfig->setServerIp('127.0.0.1');
-
+        $serverConfig->setWorkerNum(4);
+        $serverConfig->setListenAddress('0.0.0.0');
+        $serverConfig->setListenPort('9600');
         $rpc = new \EasySwoole\Rpc\Rpc($config);
 
         $goodsService = new \App\RpcServices\Goods();
@@ -80,7 +81,7 @@ class EasySwooleEvent implements Event
         $rpc->serviceManager()->addService($goodsService);
 
         $userService = new \App\RpcServices\User();
-        $userService->addModule(new User());
+        $userService->addModule(new UserModule());
         $rpc->serviceManager()->addService($userService);
 
         $rpc->attachServer(ServerManager::getInstance()->getSwooleServer());
